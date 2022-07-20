@@ -2,7 +2,9 @@ package helper
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
+	"strconv"
 )
 
 // GetMovies
@@ -31,4 +33,38 @@ func Movies() []Movie {
 		{4, "Logan", 2017},
 	}
 	return movs
+}
+
+// PostMovie
+func PostMovie(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var Mov Movie
+	if r.Method == "POST" {
+		if r.Header.Get("Content-Type") == "application/json" {
+			// parse dari json
+			decodeJSON := json.NewDecoder(r.Body)
+			if err := decodeJSON.Decode(&Mov); err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			// parse dari form
+			getID := r.PostFormValue("id")
+			id, _ := strconv.Atoi(getID)
+			title := r.PostFormValue("title")
+			getYear := r.PostFormValue("year")
+			year, _ := strconv.Atoi(getYear)
+			Mov = Movie{
+				ID:    id,
+				Title: title,
+				Year:  year,
+			}
+		}
+
+		dataMovie, _ := json.Marshal(Mov) // to byte
+		w.Write(dataMovie)
+		return
+	}
+
+	http.Error(w, "NOT FOUND", http.StatusNotFound)
+	return
 }
