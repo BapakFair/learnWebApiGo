@@ -25,13 +25,14 @@ func GetMovies(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "ERROR....", http.StatusNotFound)
 }
 
+var movs = []Movie{
+	{1, "Spider-Man", 2002},
+	{2, "John Wick", 2014},
+	{3, "Avengers", 2018},
+	{4, "Logan", 2017},
+}
+
 func Movies() []Movie {
-	movs := []Movie{
-		{1, "Spider-Man", 2002},
-		{2, "John Wick", 2014},
-		{3, "Avengers", 2018},
-		{4, "Logan", 2017},
-	}
 	return movs
 }
 
@@ -59,7 +60,7 @@ func PostMovie(w http.ResponseWriter, r *http.Request) {
 				Year:  year,
 			}
 		}
-
+		movs = append(movs, Mov)
 		dataMovie, _ := json.Marshal(Mov) // to byte
 		w.Write(dataMovie)
 		return
@@ -67,4 +68,20 @@ func PostMovie(w http.ResponseWriter, r *http.Request) {
 
 	http.Error(w, "NOT FOUND", http.StatusNotFound)
 	return
+}
+
+func Auth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		usernaame, password, ok := r.BasicAuth()
+		if !ok {
+			w.Write([]byte("Mandatory authentication required"))
+			return
+		}
+		if usernaame == "admin" && password == "admin" {
+			next.ServeHTTP(w, r)
+			return
+		}
+		w.Write([]byte("Invalid username/password"))
+		return
+	})
 }

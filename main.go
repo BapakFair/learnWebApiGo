@@ -8,8 +8,8 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/movies", GetMovies)
-	http.HandleFunc("/post_movie", PostMovie)
+	http.Handle("/movies", Auth(http.HandlerFunc(GetMovies)))
+	http.Handle("/post_movie", Auth(http.HandlerFunc(PostMovie)))
 
 	fmt.Println("server running at http://localhost:8080")
 
